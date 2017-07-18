@@ -1,0 +1,38 @@
+//
+// ****************************************************************************
+// * Copyright (C) 2017, International Business Machines Corporation          *
+// * All rights reserved.                                                     *
+// ****************************************************************************
+//
+namespace com.ibm.streamsx.metricsMonitor.LowTupleRate ;
+
+/**
+ * This sample application for the [com.ibm.streamsx.metricMonitor]
+ * outputs random and incrementing number tuples. It does this for 
+ * 20 seconds, then stops. The MemoryMonitor should have a threshold 
+ * configuration that detects this.
+ */
+composite Main
+{
+	graph
+		/*
+		 * The Beacon_Op sends 20 tuples at a rate of 1 tuple/sec.
+		 */
+		(stream<rstring message> Beacon_Op_out0) as Beacon_Op = Beacon()
+		{
+			param
+				period : 1.0 ;
+				iterations : 20 ;
+			output
+				Beacon_Op_out0 : message = "" ;
+		}
+
+		/*
+		 * The Custom_Op receives tuples from the Beacon.
+		 */
+		() as Custom_Op = Custom(Beacon_Op_out0 as inputStream)
+		{
+		
+		}
+
+}

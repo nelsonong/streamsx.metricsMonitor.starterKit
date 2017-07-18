@@ -1,0 +1,36 @@
+namespace com.ibm.streamsx.metricsMonitor.HighCongestion ;
+
+composite Main
+{
+	graph
+		/*
+		 * The Beacon_Op sends out 10000 tuples/sec.
+		 */
+		(stream<rstring message> Beacon_Op_out0) as Beacon_Op = Beacon()
+		{
+			param
+				period : 0.0001 ;
+			output
+				Beacon_Op_out0 : message = "" ;
+		}
+
+		/*
+		 * The Throttle_Op throttles incoming tuples to 1 tuple/sec.
+		 */
+		(stream<rstring message> Throttle_Op_out0) as Throttle_Op =
+			Throttle(Beacon_Op_out0)
+		{
+			param
+				rate : 1.0 ;
+		}
+
+		/*
+		 * The Custom_Op receives tuples from Throttle_Op.
+		 */
+		() as Custom_Op = Custom(Throttle_Op_out0 as inputStream)
+		{
+			
+		}
+
+}
+

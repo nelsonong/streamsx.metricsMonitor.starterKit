@@ -1,0 +1,69 @@
+//
+// ****************************************************************************
+// * Copyright (C) 2016, International Business Machines Corporation          *
+// * All rights reserved.                                                     *
+// ****************************************************************************
+//
+
+namespace com.ibm.streamsx.metricsMonitor.CustomMetrics;
+
+/**
+ * Create the custom application metrics. The function is usable in the state
+ * logic of an operator.
+ */
+stateful boolean createMetrics()
+{
+	createCustomMetric("SPLDefinedMetric", "SPL-defined metric. Contains random number.", Sys.Counter, 0l) ;
+	return true ;
+}
+
+/**
+ * This test application for the [com.ibm.streamsx.metricsMonitor]
+ * toolkit that generates random numbers and acts as a demonstration 
+ * on how to set custom metrics through SPL or Java.
+ */
+composite Main
+{
+	graph
+		/*
+		 * The Beacon generates random numbers.
+		 */
+		stream<int64 randomNumber> RandomNumbers as O = Beacon()
+		{
+			param
+				period : 1.0 ;
+				iterations : 100 ;
+			output
+				O : randomNumber =(int64)(random() * 100.0) ;
+		}
+
+		/*
+		 * The CustomSPLMetricsSink stores the received numbers in metrics
+		 * using the setCustomMetricValue() built-in function.
+		 */
+		() as CustomSPLMetricsSink = Custom(RandomNumbers as I)
+		{
+			logic
+				state :
+				{
+					boolean created = createMetrics() ;
+				}
+				
+				onTuple I :
+				{
+					setCustomMetricValue("SPLDefinedMetric", RandomNumbers.randomNumber) ;
+				}
+
+		}
+		
+		/*
+		 * The CustomJavaMetricsSink stores the received numbers in metrics 
+		 * using the Java Operator API.
+		 * 
+		 * Look at impl/java/src/CustomJavaMetricsSink.java for more information.
+		 */
+		() as CustomJavaMetricsSink_1 = CustomJavaMetricsSink(RandomNumbers)
+		{
+		
+		}
+}

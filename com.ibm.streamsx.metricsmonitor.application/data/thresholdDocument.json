@@ -1,0 +1,11 @@
+{
+  "metricName" : "nTuplesProcessed",
+  "thresholds" :
+  {
+    "rate" : "<=10,10000",
+  },
+  "filters" :
+  {
+    "jobName" : "com.ibm.streamsx.metricsMonitor.LowTupleRate.*",
+  },
+},

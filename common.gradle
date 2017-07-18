@@ -1,0 +1,60 @@
+ext.STREAMS_INSTALL = System.getenv("STREAMS_INSTALL")
+ext.ANT_HOME = System.getenv("ANT_HOME")
+
+ext.getVersion = {
+    def infoXML = new XmlSlurper().parse("$rootDir/com.ibm.streamsx.metricsmonitor.application/info.xml").declareNamespace('info':'http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo')
+    return infoXML.identity.version.text()
+}
+
+ext.splMakeToolkit = { 
+    exec() {
+        environment 'CLASSPATH', 'com.ibm.streamsx.metricsmonitor.application/lib/*'
+        commandLine STREAMS_INSTALL + '/bin/spl-make-toolkit', '-i', 'com.ibm.streamsx.metricsmonitor.application' 
+    }   
+}
+
+ext.buildAntToolkit = { toolkitDir ->
+    exec() {
+        commandLine ANT_HOME + '/bin/ant', 'all', '-file', toolkitDir + '/build.xml'
+    }
+}
+
+ext.buildSab = {
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/sc', '-M', 'com.ibm.streamsx.metricsmonitor.application::Main', '--data-directory=data', '-a', '-t', STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.topology' + ':' + STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.json' + ':' + '.slack/streamsx.slack-0.1.0/com.ibm.streamsx.slack' + ':' + '.metrics/streamsx.metrics-1.0.9/com.ibm.streamsx.metrics' + ':' + '.metrics/streamsx.metrics-1.0.9/com.ibm.streamsx.monitoring.metrics', '--no-toolkit-indexing', '--no-mixed-mode-preprocessing'
+    }
+}
+
+ext.executeSab = {
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/streamtool', 'submitjob', 'output/com.ibm.streamsx.metricsmonitor.application.Main.sab', '-P',  'applicationConfigurationName=metricsMonitorConfig'
+    }
+}
+
+ext.splCleanToolkit = { 
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/spl-make-toolkit', '-i', '.', '-c'
+    }   
+}
+
+ext.compileApp = { namespace, mainComp, toolkitPath ->  
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/sc', '-M', namespace + '::' + mainComp, '--output-directory=output/' + namespace + '.' + mainComp, '-a', '-t', toolkitPath
+    }   
+}
+
+ext.cleanApp = { namespace, mainComp ->
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/sc', '-C', '-M', namespace + "::" + mainComp
+    }
+    exec() {
+        commandLine 'rm', '-rf', 'output/' + namespace + '.' + mainComp
+    }
+}
+
+ext.spldoc = { toolkit, title ->
+    exec() {
+        commandLine STREAMS_INSTALL + '/bin/spl-make-doc', '--warn-no-comments', '-i', toolkit, '--output-dir', 'docs/spldoc', '--doc-title', title
+    }
+}
+

@@ -1,0 +1,28 @@
+namespace com.ibm.streamsx.metricsMonitor.MemoryLeak ;
+
+composite Main
+{
+	graph
+	
+		/* 
+		 * The MemoryLeak_Op creates a memory leak, when it receives a tuple.
+		 * If left running too long, a Java heap exception is thrown.
+		 */
+		() as MemoryLeak_Op = MemoryLeak(Beacon_Op_out0)
+		{
+		}
+
+		/* 
+		 * The Beacon_Op sends 1 tuple out to initiate the memory leak.
+		 */
+		(stream<rstring message> Beacon_Op_out0) as Beacon_Op = Beacon()
+		{
+			param
+				period : 1.0 ;
+				iterations: 1 ;
+			output
+				Beacon_Op_out0 : message = "" ;
+		}
+
+}
+
