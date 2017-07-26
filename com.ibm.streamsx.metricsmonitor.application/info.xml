@@ -12,10 +12,6 @@
       <common:version>[0.1.0,1.0.0)</common:version>
     </info:toolkit>
     <info:toolkit>
-      <common:name>com.ibm.streamsx.metrics</common:name>
-      <common:version>[1.0.6,2.0.0)</common:version>
-    </info:toolkit>
-    <info:toolkit>
       <common:name>com.ibm.streamsx.json</common:name>
       <common:version>[1.2.1,2.0.0)</common:version>
     </info:toolkit>
@@ -24,7 +20,7 @@
       <common:version>[1.4.4,2.0.0)</common:version>
     </info:toolkit>
     <info:toolkit>
-      <common:name>com.ibm.streamsx.monitoring.metrics</common:name>
+      <common:name>com.ibm.streamsx.monitoring</common:name>
       <common:version>[1.0.0,2.0.0)</common:version>
     </info:toolkit>
   </info:dependencies>

@@ -7,8 +7,8 @@
 
 namespace com.ibm.streamsx.metricsmonitor.application ;
 
-use com.ibm.streamsx.metrics.service::MetricsIngestService ;
-use com.ibm.streamsx.monitoring.metrics.service::MetricsMonitorService ;
+use com.ibm.streamsx.monitoring.service::MetricsIngestService ;
+use com.ibm.streamsx.monitoring.service::MetricsMonitorService ;
 use com.ibm.streamsx.slack.service::SlackService ;
 
 composite Main

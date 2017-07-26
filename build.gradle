@@ -29,28 +29,44 @@ repositories {
     }
 }
 
-/* Defs */
-def STREAMS_INSTALL = System.getenv("STREAMS_INSTALL")
-def METRICS_BASE_TAG = 'v1.0.9' // Update this tag when changing the underlying Metrics toolkit version
-def SLACK_BASE_TAG = 'v0.1.0'	// Update this tag when changing the underlying Slack toolkit version
-
 dependencies {
     compile fileTree(dir: STREAMS_INSTALL + '/lib', include: ['com.ibm.streams.operator.jar', 'com.ibm.streams.operator.samples.jar'])
     
-    compile "nelsonong:streamsx.metrics:$METRICS_BASE_TAG@zip"
-    compile fileTree(dir: 'opt/downloaded', include: ['com.ibm.streamsx.metrics*.jar'])
+    compile "IBMStreams:streamsx.monitoring:$MONITORING_BASE_TAG@zip"
+    compile fileTree(dir: 'opt/downloaded', include: ['com.ibm.streamsx.monitoring*.jar'])
 
     compile "nelsonong:streamsx.slack:$SLACK_BASE_TAG@zip"
     compile fileTree(dir: 'opt/downloaded', include: ['com.ibm.streamsx.slack*.jar'])
 }
 
+/*
+ * Get dependencies.
+ */
+task getDependencies(type: Copy) {
+    into "opt/downloaded"
+    from configurations.runtime
+    exclude '*streams*'
+}
 
-def buildMetricsLibrary() {
-    def tempDir = projectDir.getPath() + '/.metrics'
+/*
+ * Build dependencies.
+ */
+task buildDependencies {
+    doLast {
+        buildMonitoringToolkit()
+        buildSlackToolkit()
+    }
+}
+
+/*
+ * Build monitoring toolkits.
+ */
+def buildMonitoringToolkit() {
+    def tempDir = projectDir.getPath() + '/dependencies'
 
     // Download the repository's archive.
     copy {
-        def zipPath = project.configurations.compile.find {it.name.startsWith("streamsx.metrics")}
+        def zipPath = project.configurations.compile.find {it.name.startsWith("streamsx.monitoring")}
 
         from zipTree(file(zipPath))
         into file("$tempDir")
@@ -58,36 +74,27 @@ def buildMetricsLibrary() {
 
     // Get the downloaded toolkit directory.
     def outDir = new File("$tempDir")
-    def metricsDir
-    outDir.eachDirMatch(~/streamsx.metrics.*/) { file ->
-        metricsDir = new File(file, 'com.ibm.streamsx.metrics')
+
+    def monitoringDir
+    outDir.eachDirMatch(~/streamsx.monitoring.*/) { file ->
+        monitoringDir = new File(file, 'com.ibm.streamsx.monitoring')
     }
 
     // Build downloaded toolkit.
-    buildAntToolkit(metricsDir.getPath())
+    buildAntToolkit(monitoringDir.getPath())
 
     // Copy the library into the opt/downloaded folder.
     copy {
-        from fileTree(dir : (new File(metricsDir, 'impl/lib')).getPath(), include : ['*.jar'])
-        into projectDir.getPath() + '/opt/downloaded'
-    }
-
-    outDir.eachDirMatch(~/streamsx.metrics.*/) { file ->
-        metricsDir = new File(file, 'com.ibm.streamsx.monitoring.metrics')
-    }
-
-    // Build downloaded toolkit.
-    buildAntToolkit(metricsDir.getPath())
-
-    // Copy the library into the opt/downloaded folder.
-    copy {
-        from fileTree(dir : (new File(metricsDir, 'impl/lib')).getPath(), include : ['*.jar'])
+        from fileTree(dir : (new File(monitoringDir, 'impl/lib')).getPath(), include : ['*.jar'])
         into projectDir.getPath() + '/opt/downloaded'
     }
 }
 
-def buildSlackLibrary() {
-    def tempDir = projectDir.getPath() + '/.slack'
+/*
+ * Build Slack toolkit.
+ */
+def buildSlackToolkit() {
+    def tempDir = projectDir.getPath() + '/dependencies'
 
     // Download the repository's archive.
     copy {
@@ -99,8 +106,9 @@ def buildSlackLibrary() {
 
     // Get the downloaded toolkit directory.
     def outDir = new File("$tempDir")
+
     def slackDir
-    outDir.eachDirMatch(~/streamsx.slack.*/) { file ->  
+    outDir.eachDirMatch(~/streamsx.slack.*/) { file ->
         slackDir = new File(file, 'com.ibm.streamsx.slack')
     }
 
@@ -114,63 +122,45 @@ def buildSlackLibrary() {
     }
 }
 
-def buildMetricsMonitorApplication() {
-    splMakeToolkit()
-}
-
-task library {
+/*
+ * Build metrics monitor application.
+ */
+task buildApplication {
     doLast {
-        buildMetricsLibrary()
-	buildSlackLibrary()
-	buildMetricsMonitorApplication()
+	splMakeToolkit()
 	buildSab()
     }
 }
 
+/*
+ * Execute built application.
+ */
 task execute {
     doLast {
 	executeSab()
     }
 }
 
-task getDeps(type: Copy) {
-    into "opt/downloaded"
-    from configurations.runtime
-    exclude '*streams*'
-}
-
-task copyLibToImpl(type: Copy) {
-    into "impl/lib"
-    from "build/libs/"
-}
-
-task deleteDeps(type: Delete) {
+/*
+ * Clean build files.
+ */
+task deleteBuildFiles(type: Delete) {
     delete "opt"
-    delete "bin"
+    delete "dependencies"
     delete "output"
-    delete "com.ibm.streamsx.metrics"
-    delete "com.ibm.streamsx.slack"
-    delete "impl/java/bin"
-    delete "impl/lib/com.ibm.streamsx.metrics-${version}.jar"
-    delete "impl/lib/com.ibm.streamsx.monitoring.metrics-${version}.jar"
-    delete "impl/lib/com.ibm.streamsx.slack-${version}.jar"
-    delete ".metrics"
-    delete ".slack"
+    delete "build"
+    delete "impl"
 }
 
-task buildToolkit() {
-    doLast {
-        splMakeToolkit()
-    }
-}
-
+/*
+ * Clean toolkit.
+ */
 task cleanToolkit() {
     doLast {
         splCleanToolkit()
     }
 }
 
-compileJava.dependsOn getDeps, library
-compileJava.finalizedBy buildToolkit
-build.finalizedBy copyLibToImpl
-clean.dependsOn deleteDeps, cleanToolkit
+compileJava.dependsOn getDependencies, buildDependencies
+compileJava.finalizedBy buildApplication
+clean.dependsOn deleteBuildFiles, cleanToolkit
