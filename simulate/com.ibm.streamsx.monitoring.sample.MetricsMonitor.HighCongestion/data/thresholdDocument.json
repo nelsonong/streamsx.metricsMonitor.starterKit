@@ -1,0 +1,13 @@
+[
+	{
+	  "metricName" : "congestionFactor",
+	  "thresholds" :
+	  {
+	    "rollingAverage" : ">80,20000"
+	  },
+	  "filters" :
+	  {
+	    "jobName" : "com.ibm.streamsx.monitoring.sample.MetricsMonitor.HighCongestion.*"
+	  }
+	}
+]

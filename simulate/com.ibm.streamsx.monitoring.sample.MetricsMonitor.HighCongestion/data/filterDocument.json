@@ -1,0 +1,30 @@
+[
+	{
+		"domainIdPatterns":".*",
+		"instances":
+		[
+			{
+				"instanceIdPatterns":".*",
+				"jobs":
+				[
+					{
+						"jobNamePatterns":"com.ibm.streamsx.monitoring.sample.MetricsMonitor.HighCongestion.*",
+						"pes":
+						[
+							{
+								"metricNamePatterns":".*",
+								"connections":
+								[
+									{
+										"portIndexes":"*",
+										"metricNamePatterns":"congestionFactor.*"
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]

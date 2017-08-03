@@ -1,0 +1,104 @@
+//
+// ****************************************************************************
+// * Copyright (C) 2017, International Business Machines Corporation          *
+// * All rights reserved.                                                     *
+// ****************************************************************************
+//
+
+/**
+ * This sample application for the [com.ibm.streamsx.monitoring::MetricsMonitor]
+ * simulates an application that has high congestion by using a Beacon operator 
+ * to output 10000 tuples/second and a Throttle operator to limit the rate to 
+ * 1 tuple/second. 
+ * 
+ * The MetricsMonitor's threshold document should have a threshold rule that gets 
+ * triggered when the congestion factor has a rolling average above 80 for a 
+ * duration of 20 seconds. Look at the thresholdDocument.json in the data 
+ * directory for more details.
+ */
+ 
+namespace com.ibm.streamsx.monitoring.sample.MetricsMonitor.HighCongestion ;
+
+use com.ibm.streamsx.monitoring.metrics::* ;
+
+composite Main
+{
+	graph
+		/**
+		 * The HighCongestionSimulator simulates a scenario where the rolling 
+		 * average of the congestionFactor metric goes above 80.
+		 */
+		 () as Simulator = HighCongestionSimulator()
+		 {
+		 
+		 }
+	
+		/*
+		 * The MetricsSource outputs congestionFactor metric tuples.
+		 */
+		stream<Notification> MetricsTuples = MetricsSource()
+		{
+			param
+				connectionURL: getSubmissionTimeValue("connectionURL");
+				user: getSubmissionTimeValue("user");
+				password: getSubmissionTimeValue("password");
+				domainId: getSubmissionTimeValue("domainId");
+				scanPeriod: (float64)getSubmissionTimeValue("scanPeriod", "5.0");
+				filterDocument : dataDirectory() + "/filterDocument.json" ;
+				emitMetricTuple : periodic ;
+		}
+
+		/**
+		 * The MetricsMonitor monitors the congestionFactor and outputs an 
+		 * alert when its rolling average goes above 80.
+		 */
+		stream<rstring message> MetricsAlerts = MetricsMonitor(MetricsTuples)
+		{
+			param
+				thresholdDocumentPath : dataDirectory() + "/thresholdDocument.json" ;
+		}
+
+		/**
+		 * The FileSink outputs the messages to a text file. This can easily be 
+		 * substituted with a Export/Publish operator.
+		 */
+		() as Sink = FileSink(MetricsAlerts)
+		{
+			param
+				file : "alerts.txt" ;
+		}
+}
+
+composite HighCongestionSimulator
+{
+	graph
+		/*
+		 * The Beacon operator outputs 10000 tuples/second.
+		 */
+		stream<rstring emptyMessage> TupleData = Beacon()
+		{
+			param
+				period : 0.0001 ;
+			output
+				TupleData : emptyMessage = "" ;
+		}
+
+		/*
+		 * The Throttle operator throttles incoming tuples to 1 tuple/second.
+		 */
+		stream<rstring emptyMessage> ThrottledData = Throttle(TupleData)
+		{
+			param
+				rate : 1.0 ;
+		}
+
+		/*
+		 * The Custom operator receives the ThrottledData.
+		 */
+		() as Custom_0 = Custom(ThrottledData)
+		{
+			
+		}
+
+}
+

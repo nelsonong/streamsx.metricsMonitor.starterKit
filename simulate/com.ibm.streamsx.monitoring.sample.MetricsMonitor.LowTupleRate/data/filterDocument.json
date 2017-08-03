@@ -1,0 +1,31 @@
+[
+	{
+		"domainIdPatterns":".*",
+		"instances":
+		[
+			{
+				"instanceIdPatterns":".*",
+				"jobs":
+				[
+					{
+						"jobNamePatterns":"com.ibm.streamsx.monitoring.sample.MetricsMonitor.LowTupleRate.*",
+						"operators":
+						[
+							{
+								"operatorNamePatterns":"Simulator.*",
+								"metricNamePatterns":".*",
+								"outputPorts":
+								[
+									{
+										"portIndexes":"*",
+										"metricNamePatterns":"nTuplesSubmitted.*"
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]

@@ -1,0 +1,13 @@
+[
+	{
+	  "metricName" : "nTuplesSubmitted",
+	  "thresholds" :
+	  {
+	    "rate" : "0,20000"
+	  },
+	  "filters" :
+	  {
+	    "jobName" : "com.ibm.streamsx.monitoring.sample.MetricsMonitor.LowTupleRate.*"
+	  }
+	}
+]
