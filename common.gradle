@@ -1,6 +1,6 @@
 ext.STREAMS_INSTALL = System.getenv("STREAMS_INSTALL")
 ext.ANT_HOME = System.getenv("ANT_HOME")
-ext.MONITORING_BASE_TAG = 'v1.2.0' 	// Update this tag when changing the underlying monitoring toolkit version
+ext.MONITORING_BASE_TAG = 'v1.3.0' 	// Update this tag when changing the underlying monitoring toolkit version
 ext.SLACK_BASE_TAG 	= 'v0.1.0'	// Update this tag when changing the underlying Slack toolkit version
 
 ext.getVersion = {
@@ -24,7 +24,7 @@ ext.buildAntToolkit = { toolkitDir ->
 ext.buildSab = {
     exec() {
         commandLine STREAMS_INSTALL + '/bin/sc', '-M', 'com.ibm.streamsx.metricsmonitor.application::Main', '--data-directory=data', '-a', 
-	'-t', STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.topology' + ':' + STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.json' + ':' + 'dependencies/streamsx.slack-0.1.0/com.ibm.streamsx.slack' + ':' + 'dependencies/streamsx.monitoring-1.2.0/com.ibm.streamsx.monitoring', '--no-toolkit-indexing', '--no-mixed-mode-preprocessing'
+	'-t', STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.topology' + ':' + STREAMS_INSTALL + '/toolkits/com.ibm.streamsx.json' + ':' + 'dependencies/streamsx.slack-0.1.0/com.ibm.streamsx.slack' + ':' + 'dependencies/streamsx.monitoring-1.3.0/com.ibm.streamsx.monitoring', '--no-toolkit-indexing', '--no-mixed-mode-preprocessing'
     }
 }
 
