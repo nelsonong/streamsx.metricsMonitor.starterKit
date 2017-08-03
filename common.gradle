@@ -3,10 +3,16 @@ ext.ANT_HOME = System.getenv("ANT_HOME")
 ext.MONITORING_BASE_TAG = 'v1.3.0' 	// Update this tag when changing the underlying monitoring toolkit version
 ext.SLACK_BASE_TAG 	= 'v0.1.0'	// Update this tag when changing the underlying Slack toolkit version
 
+// Load properties
+ext.metricsMonitorProps = new Properties()
+metricsMonitorProps.load(file('./metricsmonitor.properties').newReader())
+
 ext.getVersion = {
     def infoXML = new XmlSlurper().parse("$rootDir/com.ibm.streamsx.metricsmonitor.application/info.xml").declareNamespace('info':'http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo')
     return infoXML.identity.version.text()
 }
+
+
 
 ext.splMakeToolkit = { 
     exec() {
@@ -30,7 +36,7 @@ ext.buildSab = {
 
 ext.executeSab = {
     exec() {
-        commandLine STREAMS_INSTALL + '/bin/streamtool', 'submitjob', 'output/com.ibm.streamsx.metricsmonitor.application.Main.sab', '-P',  'applicationConfigurationName=metricsMonitorConfig'
+        commandLine STREAMS_INSTALL + '/bin/streamtool', 'submitjob', 'output/com.ibm.streamsx.metricsmonitor.application.Main.sab', '-P',  'applicationConfigurationName=' + metricsMonitorProps['applicationConfigurationName']
     }
 }
 
