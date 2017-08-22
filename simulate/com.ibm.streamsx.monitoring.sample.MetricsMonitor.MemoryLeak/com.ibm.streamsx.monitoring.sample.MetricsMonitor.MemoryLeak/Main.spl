@@ -24,6 +24,15 @@ composite Main
 {
 	graph
 		/**
+		 * The MemoryLeakMonitor monitors the MemoryLeakSimulator for memory leaks. 
+		 * See the threshold rules used in the data/thresholdDocument.json.
+		 */
+		 () as Monitor = MemoryLeakMonitor()
+		 {
+		 
+		 }
+		 
+		/**
 		 * The MemoryLeakSimulator simulates a scenario where the increase percentage 
 		 * of the nResidentMemoryConsumption metric is above 80 for a duration of 10 
 		 * seconds.
@@ -32,7 +41,11 @@ composite Main
 		 {
 		 
 		 }
-	
+}
+
+composite MemoryLeakMonitor
+{
+	graph
 		/*
 		 * The MetricsSource outputs nResidentMemoryConsumption metric tuples.
 		 */
@@ -60,7 +73,7 @@ composite Main
 
 		/**
 		 * The FileSink outputs the messages to a text file. This can easily be 
-		 * substituted with a Export/Publish operator.
+		 * substituted with an Export/Publish operator.
 		 */
 		() as Sink = FileSink(MetricsAlerts)
 		{
@@ -85,7 +98,7 @@ composite MemoryLeakSimulator
 		}
 		
 		/* 
-		 * The MemoryLeak operator generates a memory leak, after it receives a 
+		 * The MemoryLeak operator generates a memory leak after it receives a 
 		 * tuple. If left running too long, a java.lang.OutOfMemoryError will be 
 		 * thrown.
 		 */

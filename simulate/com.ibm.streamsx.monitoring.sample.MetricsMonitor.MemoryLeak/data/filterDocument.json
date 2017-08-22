@@ -8,11 +8,14 @@
 				"jobs":
 				[
 					{
-						"jobNamePatterns":".*",
+						"jobNamePatterns":"com.ibm.streamsx.monitoring.sample.MetricsMonitor.MemoryLeak.*",
 						"pes":
 						[
 							{
-								"metricNamePatterns":".*"
+								"metricNamePatterns":
+								[
+									"nResidentMemoryConsumption"
+								]
 							}
 						]
 					}
